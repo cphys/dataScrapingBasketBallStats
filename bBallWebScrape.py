@@ -7,13 +7,28 @@ import matplotlib.pyplot as plt
 from IPython.display import display
 
 
-abrevs = ['GP','GS','MPG','FG%','FT%','BPG','RPG','APG','PPG']
-fullTerms = ['Games played', 'Games started', 'Minutes per game', 'Field goal percentage', 'Free-throw percentage', 'Blocks per game', 'Rebounds per game', 'Assists per game', 'Points per game']
-
-
-def getBasketballStats(name = 'Michael Jordan'):
+def getBasketballLegend(name = 'Michael Jordan'):
     link = 'https://en.wikipedia.org/wiki/' + name.title().replace(" ","_")
-    
+    # read the webpage
+    response = requests.get(link)
+
+    # create a BeautifulSoup object to parse the HTML  
+    soup = bs4.BeautifulSoup(response.text, 'html.parser')
+
+    # the player stats are defined  with the attribute CSS class set to 'wikitable sortable'; 
+    # therefore we create a tag object "table"
+    table = soup.find(class_='wikitable sortable')
+    # the headers of the table are the first table row (tr) we create a tag object that has the first row  
+    headers=table.tr
+
+    titles=headers.find_all("abbr")
+    abbrevs = {str(title).replace(str(title['title']),'').replace(str('<abbr title="">'),'').replace(str('</abbr>'),''):title['title'] for title in titles}
+    return abbrevs
+
+
+def getBasketballStats(name = 'Michael Jordan', plLegend = None):
+    link = 'https://en.wikipedia.org/wiki/' + name.title().replace(" ","_")
+
     # read the webpage
     response = requests.get(link)
 
@@ -24,6 +39,7 @@ def getBasketballStats(name = 'Michael Jordan'):
     # therefore we create a tag object "table"
     sortableTable = True
     table = soup.find(class_='wikitable sortable')
+
     if type(table) == type(None):
         sortableTable = False
         table = soup.find(class_='wikitable')  
@@ -31,21 +47,27 @@ def getBasketballStats(name = 'Michael Jordan'):
 
     # the headers of the table are the first table row (tr) we create a tag object that has the first row  
     headers=table.tr
-    
+
+
     # the table column names are displayed  as an abbreviation; therefore we find all the abbr tags and returs an Iterator
     if sortableTable:
         titles=headers.find_all("abbr")
-
-        # we create a dictionary  and pass the table headers as the keys 
-        data = {title['title']:[] for title in titles}
-
-    else:
-        titles=headers.find_all()  
         # we create a dictionary  and pass the table headers as the keys
-        data = {str(titles[i])[4:-5].replace("\n","") :[] for i in range(2,len(titles))}
-
-        for i in range(len(abrevs)):
-            data[fullTerms[i]] = data.pop(abrevs[i])
+        data = {title['title']:[] for title in titles}
+    else:
+        titles=headers.find_all()
+        if plLegend == None:
+            linkMJ = 'https://en.wikipedia.org/wiki/Michael_Jordan'
+            responseMJ = requests.get(linkMJ)
+            soupMJ = bs4.BeautifulSoup(responseMJ.text, 'html.parser')
+            tableMJ = soupMJ.find(class_='wikitable sortable')
+            headersMJ = tableMJ.tr
+            titlesMJ=headersMJ.find_all("abbr")
+            abbrevsMJ = {str(title).replace(str(title['title']),'').replace(str('<abbr title="">'),'').replace(str('</abbr>'),''):title['title'] for title in titlesMJ}
+        else:
+            abbrevsMJ = plLegend
+        # we create a dictionary  and pass the table headers as the keys
+        data = {str(abbrevsMJ[str(titles[i]).replace("\n","").replace("<th>","").replace("</th>","")]) :[] for i in range(2,len(titles))}
 
     # we store each column as a list in a dictionary, the header of the column will be the dictionary key 
     # we iterate over each table row by finding each table tag tr and assigning it to the object
@@ -65,12 +87,11 @@ def getBasketballStats(name = 'Michael Jordan'):
     return data
 
 
-namesList =['Michael Jordan','Kobe Bryant','Lebron James','Stephen Curry','Detlef Schrempf', 'Shawn Kemp']
-
 
 def plotStatVsTime(stat, names):
+    plLegendMJ = getBasketballLegend()
     for name in names:
-        dataFrame = pd.DataFrame(getBasketballStats(name))
+        dataFrame = pd.DataFrame(getBasketballStats(name, plLegend = plLegendMJ))
         availableStats = [key for key, value in dataFrame.iteritems()]         
         try:
             pldatFram = dataFrame[[stat]]
@@ -83,6 +104,7 @@ def plotStatVsTime(stat, names):
     plt.ylabel(stat)
     plt.show()
 
-plotStatVsTime(stat = 'Field goal percentage', names = ['Detlef Schrempf', 'Shawn Kemp'])
+namesList =['Michael Jordan','Kobe Bryant','Lebron James','Stephen Curry','Detlef Schrempf', 'Shawn Kemp','Charles Barkley']
+plotStatVsTime(stat = '3-point field-goal percentage', names = namesList)
 
 

@@ -1,5 +1,7 @@
 # Scrape nba data from Wikipedia
-Scrapes wikipedia for basketball stats and plots
+Scrapes wikipedia for basketball stats and creates plots
+
+![](/theGOAT.png?raw=true)
 
 ![](/bball3pt.png?raw=true)
 

@@ -1,7 +1,7 @@
 # Scrape nba data from Wikipedia
 Scrapes wikipedia for basketball stats and plots
 
-![SPORTS!](bball3pt.png)
+![](/bball3pt.png?raw=true)
 
 ## Instructions
 * Run python code to generate data and mathematica to plot.

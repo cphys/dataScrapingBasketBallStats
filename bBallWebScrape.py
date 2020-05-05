@@ -15,11 +15,10 @@ def getBasketballLegend(name = 'Michael Jordan'):
     # create a BeautifulSoup object to parse the HTML  
     soup = bs4.BeautifulSoup(response.text, 'html.parser')
 
-    # the player stats are defined  with the attribute CSS class set to
-    # 'wikitable sortable'therefore we create a tag object "table"
+    # the player stats are defined  with the attribute CSS class set to 'wikitable sortable'; 
+    # therefore we create a tag object "table"
     table = soup.find(class_='wikitable sortable')
-    # the headers of the table are the first table row (tr) we create a tag
-    # object that has the first row  
+    # the headers of the table are the first table row (tr) we create a tag object that has the first row  
     headers=table.tr
 
     titles=headers.find_all("abbr")
@@ -36,23 +35,21 @@ def getBasketballStats(name = 'Michael Jordan', plLegend = None):
     # create a BeautifulSoup object to parse the HTML  
     soup = bs4.BeautifulSoup(response.text, 'html.parser')
 
-    # the player stats are defined  with the attribute CSS class set to
-    # 'wikitable sortable' therefore we create a tag object "table"
+    # the player stats are defined  with the attribute CSS class set to 'wikitable sortable'; 
+    # therefore we create a tag object "table"
     sortableTable = True
     table = soup.find(class_='wikitable sortable')
 
     if type(table) == type(None):
         sortableTable = False
         table = soup.find(class_='wikitable')  
-    assert(type(table) != type(None)), 'No data available on wikipedia for ' + name
+    assert(type(table)!= type(None)), 'No data available on wikipedia for ' + name
 
-    # the headers of the table are the first table row (tr) we create a tag
-    # object that has the first row  
+    # the headers of the table are the first table row (tr) we create a tag object that has the first row  
     headers=table.tr
 
 
-    # the table column names are displayed  as an abbreviation; therefore we
-    # find all the abbr tags and returs an Iterator
+    # the table column names are displayed  as an abbreviation; therefore we find all the abbr tags and returs an Iterator
     if sortableTable:
         titles=headers.find_all("abbr")
         # we create a dictionary  and pass the table headers as the keys
@@ -72,12 +69,10 @@ def getBasketballStats(name = 'Michael Jordan', plLegend = None):
         # we create a dictionary  and pass the table headers as the keys
         data = {str(abbrevsMJ[str(titles[i]).replace("\n","").replace("<th>","").replace("</th>","")]) :[] for i in range(2,len(titles))}
 
-    # we store each column as a list in a dictionary, the header of the column
-    # will be the dictionary key we iterate over each table row by finding each 
-    # table tag tr and assigning it to the object
+    # we store each column as a list in a dictionary, the header of the column will be the dictionary key 
+    # we iterate over each table row by finding each table tag tr and assigning it to the object
     for row in table.find_all('tr')[1:]:    
-    # we iterate over each cell in the table, as each cell corresponds to a
-    # different column, we obtain all of the keys corresponding to the column n 
+    # we iterate over each cell in the table, as each cell corresponds to a different column, we obtain all of the keys corresponding to the column n 
         for key, a in zip(data.keys(),row.find_all("td")[2:]):
             # we append each elment and strip any extra HTML contnet 
             data[key].append(''.join(c for c in a.text if (c.isdigit() or c == ".")))
@@ -85,8 +80,10 @@ def getBasketballStats(name = 'Michael Jordan', plLegend = None):
     # we remove extra rows by finding the smallest list     
     Min=min([len(x)  for x in data.values()])
     #we convert the elements in the key to floats 
-    for key in data.keys():    
-        data[key]=list(map(lambda x: float(x), data[key][:Min]))       
+    for key in data.keys():
+    
+        data[key]=list(map(lambda x: float(x), data[key][:Min]))
+       
     return data
 
 
@@ -100,20 +97,13 @@ def plotStatVsTime(stat, names):
             pldatFram = dataFrame[[stat]]
             plt.plot(pldatFram,label=name)
         except KeyError:
-            print('Error: No stat called ' + stat + ' is avalable on ' + name +
-                  '\'s wikipedia page\nAvalable stats are:\n' + '%s' %
-                  '\n'.join(map(str, availableStats)) + '\n')
+            print('Error: No stat called ' + stat + ' is avalable on ' + name + '\'s wikipedia page\nAvalable stats are:\n' + '%s' % '\n'.join(map(str, availableStats)) + '\n')
 
     plt.legend(shadow=True)
     plt.xlabel('years')
     plt.ylabel(stat)
     plt.show()
 
-namesList =['Michael Jordan','Kobe Bryant','Lebron James','Stephen Curry',
-            'Detlef Schrempf', 'Shawn Kemp','Charles Barkley']
-
-plotStatVsTime(stat = 'Field goal percentage', names = ['Detlef Schrempf', 'Michael Jordan'])
-
+namesList =['Michael Jordan','Kobe Bryant','Lebron James','Stephen Curry','Detlef Schrempf', 'Shawn Kemp','Charles Barkley']
 plotStatVsTime(stat = '3-point field-goal percentage', names = namesList)
-
 
